@@ -1,16 +1,61 @@
-# React + Vite
+![Diagram](./src/assets/diagram.png)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+На діаграмі зображено потік даних у додатку To-Do List.
+Вгорі знаходиться App, який підключає TodoListContainer — це контейнерний компонент, що використовує хук useTodos.
 
-Currently, two official plugins are available:
+Хук useTodos керує усіма станами:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+масив завдань todos,
 
-## React Compiler
+стан завантаження isLoading,
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+поточна сторінка currentPage,
 
-## Expanding the ESLint configuration
+параметри пошуку searchTerm,
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+функції CRUD (add, edit, delete, toggle).
+
+Отримані з useTodos дані передаються до TodoListContainer, який розділяє їх між двома підкомпонентами:
+
+TodoListControls — відповідає за керування взаємодією користувача.
+У нього входять:
+
+TodoForm (додає нові завдання);
+
+SearchInput (фільтрує список);
+
+PaginationControls (керує сторінками).
+
+TodoListView — отримує список todos і відображає його за допомогою TodoItem.
+Кожен TodoItem може бути відредагований, видалений або позначений як виконаний через передані колбеки (onEditTitle, onDelete, onToggle).
+
+Таким чином, діаграма показує, як дані рухаються зверху вниз (App → Container → Controls/View → окремі елементи) та як дії користувача рухаються вгору через функції (onAdd, onEdit тощо).
+Варіант 3 — Аналітичний (для захисту або технічного опису)
+
+Діаграма відображає односпрямований потік даних (unidirectional data flow), типовий для React-архітектури.
+
+App — кореневий компонент, який ініціалізує додаток і рендерить контейнер TodoListContainer.
+
+TodoListContainer — це "контейнер логіки". Він викликає кастомний хук useTodos, який:
+
+керує станами todos, searchTerm, currentPage, isLoading;
+
+взаємодіє з API (fetch, add, edit, delete);
+
+повертає усі ці дані й функції.
+
+Потім TodoListContainer розділяє інтерфейс на дві частини:
+
+TodoListControls — верхня панель керування (форма, пошук, пагінація);
+
+TodoListView — візуальне відображення списку завдань.
+
+TodoListControls містить три незалежні статичні компоненти:
+
+TodoForm (має власний локальний state text);
+
+SearchInput (отримує searchTerm через props);
+
+PaginationControls (керує сторінками через пропси goToNextPage, setLimit, isFirstPage тощо).
+
+TodoListView відображає список TodoItem, кожен з яких має власний локальний state (isEditing, editText) і отримує функції для змін (onToggle, onEditTitle, onDelete).
